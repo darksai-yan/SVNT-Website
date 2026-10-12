@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SVNT.CO</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <header>
+        <h1>S   V   N   T</h1>
+    </header>
+    <nav>
+        <a href="#">Home</a>
+        <a href="/level">Level</a>
+        <a href="/reglog">To Profile</a>
+        <a href="/users">Users</a>
+        <a href="#">About Us</a>
+    </nav>
+
+    <div id="collage" class="collage-container"></div>
+
+    <div class="upload-container">
+        <input type="file" id="fileInput" accept="image/*" hidden>
+        <button class="upload-btn" onclick="document.getElementById('fileInput').click();">ADD PHOTO</button>
+    </div>
+    
+    <!-- Модалка -->
+    <div id="uploadModal" style="display: none;">
+      <div id="modalContent">
+        <img id="previewImage" src="" alt="Preview" style="max-width: 100%; border-radius: 10px; margin-bottom: 10px;">
+        <textarea id="photoCaption" placeholder="Введіть підпис..." style="width: 100%; margin-bottom: 10px; padding: 8px; border-radius: 8px;"></textarea>
+        <br>
+        <button onclick="publishPhoto()">Опублікувати</button>
+        <button onclick="closeModal()">Скасувати</button>
+      </div>
+    </div>
+
+
+    <script>
+      let selectedFile = null;
+
+document.getElementById('fileInput').addEventListener('change', function() {
+    if (this.files.length > 0) {
+        selectedFile = this.files[0];
+        
+        // Показуємо прев'ю фото
+        const preview = document.getElementById('previewImage');
+        preview.src = URL.createObjectURL(selectedFile);
+
+        // Відкриваємо модалку
+        document.getElementById('uploadModal').style.display = 'flex';
+    }
+});
+
+// Функція закрити модалку
+function closeModal() {
+    document.getElementById('uploadModal').style.display = 'none';
+    document.getElementById('photoCaption').value = '';
+    selectedFile = null;
+}
+
+// Функція опублікувати фото
+function publishPhoto() {
+    if (!selectedFile) return;
+
+    const caption = document.getElementById('photoCaption').value;
+
+    const formData = new FormData();
+    formData.append("collage_photo", selectedFile);
+    formData.append("caption", caption);
+
+    fetch("/upload_collage", {
+        method: "POST",
+        body: formData
+    }).then(response => response.json())
+      .then(data => {
+          if (data.status === "success") {
+              closeModal();
+              setTimeout(loadCollagePhotos, 500);
+          } else {
+              alert("Помилка: " + data.message);
+          }
+      }).catch(error => console.error("Помилка завантаження:", error));
+}   
+
+
+function loadCollagePhotos() {
+    fetch("/get_collage_photos")
+        .then(response => response.json())
+        .then(data => {
+            const collage = document.getElementById("collage");
+            collage.innerHTML = "";
+
+            data.forEach(photo => {
+                const img = document.createElement("img");
+                img.src = photo.src;
+                img.classList.add("collage-photo");
+
+                img.onclick = () => openPostModal(photo);
+                collage.appendChild(img);
+            });
+        });
+}
+        setInterval(loadCollagePhotos, 5000);  // Оновлення колажу кожні 5 сек
+        loadCollagePhotos();
+
+        let currentPhotoId = null;
+        let currentPhoto = null; // додаємо глобально
+
+function openPostModal(photo) {
+    currentPhoto = photo; // зберігаємо для повторного відкриття
+
+    document.getElementById("modalImage").src = photo.src;
+    document.getElementById("modalCaption").textContent = photo.caption || "";
+    document.getElementById("modalUserLink").textContent = photo.user.username;
+    document.getElementById("modalUserLink").href = `/user/${photo.user.username}`;
+    currentPhotoId = photo.id;
+
+    fetch(`/like_count/${photo.id}`)
+        .then(res => res.json())
+        .then(data => {
+            const likeBtn = document.getElementById("likeButton");
+            likeBtn.innerHTML = `
+              <span class="heartIcon">${data.liked ? '❤️' : '🤍'}</span>
+              <span class="likeCount">${data.like_count}</span>
+            `;
+            likeBtn.classList.toggle("liked", data.liked);
+        });
+
+    document.getElementById("postModal").style.display = "flex";
+}
+
+function toggleLike(buttonElement) {
+  if (!currentPhotoId) return;
+
+  fetch(`/like/${currentPhotoId}`, { method: 'POST' })
+    .then(res => res.json())
+    .then(() => {
+      // Просто оновлюємо дані в модалці
+      openPostModal(currentPhoto);
+    })
+    .catch(err => console.error("LIKE ERROR:", err));
+}
+
+
+
+function closePostModal() {
+        document.getElementById("postModal").style.display = "none";
+    }
+        </script>
+
+   <!-- Модалка перегляду поста -->
+<div id="postModal" style="display: none;" class="modal">
+    <div class="modal-content">
+      <span class="close-btn" onclick="closePostModal()">&times;</span>
+      <img id="modalImage" src="" alt="Image" class="modal-photo">
+      <p id="modalCaption"></p>
+      <p>Додано: <a href="#" id="modalUserLink"></a></p>
+      <button id="likeButton" onclick="toggleLike(this)">
+        <span class="heartIcon">🤍</span> <span class="likeCount">0</span>
+      </button>
+    </div>
+  </div> 
+</body>
+</html>

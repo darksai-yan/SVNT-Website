@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Профіль користувача</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #161616;
+        }
+        .profile-container {
+            background: rgb(52, 52, 52);
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            width: 80%;
+            max-width: 600px;
+        }
+        .profile-img {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+            {% if editable %} cursor: pointer; {% endif %}
+        }
+        .upload-form {
+            display: none;
+        }
+        .photo-gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .photo-gallery img {
+            width: 100%;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="profile-container">
+        <div style="padding-top: 150px;">
+        <img src="{{ profile_image }}" id="avatar" alt="Фото профілю" class="profile-img">
+        </div>
+        <h1>{{ username }}</h1>
+
+        {% if editable %}
+        <form id="uploadForm" action="/upload" method="post" enctype="multipart/form-data" class="upload-form">
+            <input type="file" id="fileInput" name="profile_picture" accept="image/*">
+        </form>
+        {% endif %}
+
+        <h3>Підписники: {{ followers_count }}</h3>
+        <h3>Підписки: {{ following_count }}</h3>
+
+        {% if current_user.is_authenticated %}
+        {% if not editable %}
+        <form action="{{ url_for('follow', user_id=user.id) }}" method="POST">
+            <button type="submit" style="background-color: {% if current_user.is_following(user) %}#e74c3c{% else %}#3498db{% endif %}; color: white; padding: 10px 20px; border: none; border-radius: 5px;">
+                {% if current_user.is_following(user) %}
+                    Відписатися
+                {% else %}
+                    Підписатися
+                {% endif %}
+            </button>
+        </form>
+        {% endif %}
+        {% endif %}
+        
+
+
+        <nav>
+            <a href="/">Home</a>
+            {% if editable %}
+            <a href="/logout">Logout</a>
+            {% endif %}
+        </nav>
+        <div style="padding-left: 225px;">
+        <div class="level-container">
+            <div class="level-circle">
+                <div class="level-fill" style="--progress: {{ level }};"></div>  <!-- Додаємо рівень -->
+                <div class="level-text">{{ level }}</div>  <!-- Показуємо рівень -->
+            </div>
+        </div>
+        </div>
+        
+        <h3>Photos:</h3>
+        <div class="photo-gallery">
+            {% if user_photos %}
+            {% for photo in user_photos %}
+            <img src="{{ photo.src }}" alt="Фото користувача"
+                 onclick='openPostModal({{ photo | tojson | safe }})'>
+            {% endfor %}
+            {% else %}
+                <p>The user has not uploaded any photos yet.</p>
+            {% endif %}
+        </div>
+    </div>
+    
+    {% if editable %}
+    <script>
+        document.getElementById("avatar").addEventListener("click", function() {
+            document.getElementById("fileInput").click();
+        });
+
+        document.getElementById("fileInput").addEventListener("change", function() {
+            document.getElementById("uploadForm").submit();
+        });
+    </script>
+    {% endif %}
+    <script>
+                let currentPhoto = null; // додаємо глобально
+
+function openPostModal(photo) {
+    currentPhoto = photo; // зберігаємо для повторного відкриття
+
+    document.getElementById("modalImage").src = photo.src;
+    document.getElementById("modalCaption").textContent = photo.caption || "";
+    document.getElementById("modalUserLink").textContent = photo.user.username;
+    document.getElementById("modalUserLink").href = `/user/${photo.user.username}`;
+    currentPhotoId = photo.id;
+
+    fetch(`/like_count/${photo.id}`)
+        .then(res => res.json())
+        .then(data => {
+            const likeBtn = document.getElementById("likeButton");
+            likeBtn.innerHTML = `
+              <span class="heartIcon">${data.liked ? '❤️' : '🤍'}</span>
+              <span class="likeCount">${data.like_count}</span>
+            `;
+            likeBtn.classList.toggle("liked", data.liked);
+        });
+
+    document.getElementById("postModal").style.display = "flex";
+}
+
+function toggleLike(buttonElement) {
+  if (!currentPhotoId) return;
+
+  fetch(`/like/${currentPhotoId}`, { method: 'POST' })
+    .then(res => res.json())
+    .then(() => {
+      // Просто оновлюємо дані в модалці
+      openPostModal(currentPhoto);
+    })
+    .catch(err => console.error("LIKE ERROR:", err));
+}
+
+
+
+function closePostModal() {
+        document.getElementById("postModal").style.display = "none";
+    }
+        </script>
+
+   <!-- Модалка перегляду поста -->
+<div id="postModal" style="display: none;" class="modal">
+    <div class="modal-content">
+      <span class="close-btn" onclick="closePostModal()">&times;</span>
+      <img id="modalImage" src="" alt="Image" class="modal-photo">
+      <p id="modalCaption"></p>
+      <p>Додано: <a href="#" id="modalUserLink"></a></p>
+      <button id="likeButton" onclick="toggleLike(this)">
+        <span class="heartIcon">🤍</span> <span class="likeCount">0</span>
+      </button>
+    </div>
+  </div> 
+    
+</body>
+</html>

@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <title>Реєстрація</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        .password-toggle {
+            cursor: pointer;
+            margin-left: 10px;
+            user-select: none;
+        }
+    </style>
+</head>
+<body>
+<header><h1>Registration</h1></header>
+
+<!-- Тут ми виводимо флеш-повідомлення -->
+
+
+<header>
+<form method="POST">
+    <input type="text" name="username" placeholder="Логін" required>
+    
+    <div style="position: relative;">
+        <input id="password" type="password" name="password" placeholder="Пароль" required>
+        <span class="password-toggle" onclick="togglePassword()">👁️</span>
+    </div>
+
+    <btn><button type="submit">Sign up</button></btn>
+</form>
+</header>
+<nav><a href="/login">Вже є акаунт? Увійти</a></nav>
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    <ul class="flashes">
+      {% for category, message in messages %}
+        <li class="{{ category }}">{{ message }}</li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+{% endwith %}
+<script>
+function togglePassword() {
+    const passwordInput = document.getElementById('password');
+    if (passwordInput.type === "password") {
+        passwordInput.type = "text"; // Показати пароль
+    } else {
+        passwordInput.type = "password"; // Сховати пароль
+    }
+}
+</script>
+</body>
+</html>

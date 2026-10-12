@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Users</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <header>
+        <h1>Users</h1>
+    </header>
+    <nav>
+        <a href="/">Home</a>
+        <a href="/reglog">To Profile</a>
+        <a href="#">About Us</a>
+    </nav>
+
+    <div class="search-container">
+        <input type="text" id="searchInput" placeholder="Пошук користувача..." style="margin: 20px; padding: 10px; font-size: 16px; width: 300px;">
+    </div>
+<div class="users-container">
+    <p id="noResults" style="display: none; text-align: center; font-size: 20px; margin-top: 20px;">Користувача не знайдено</p>
+    {% for user in users %}
+        <a href="{{ url_for('user_profile', username=user.username) }}" class="user-card">
+            <img src="{{ url_for('static', filename='uploads/user_' + user.id|string + '.jpg') }}" 
+            onerror="this.src='{{ url_for('static', filename='default_profile.png') }}'" 
+            alt="Avatar" class="user-avatar">
+            <span>{{ user.username }}</span>
+        </a>
+    {% endfor %}
+</div>
+    <script>
+    document.getElementById('searchInput').addEventListener('input', function() {
+        const searchValue = this.value.toLowerCase();
+        const userCards = document.querySelectorAll('.user-card');
+        let hasVisible = false;
+    
+        userCards.forEach(card => {
+            const username = card.querySelector('span').textContent.toLowerCase();
+            if (username.includes(searchValue)) {
+                card.style.display = 'inline-flex';
+                hasVisible = true;
+            } else {
+                card.style.display = 'none';
+            }
+        });
+    
+        // Показати або приховати повідомлення "Користувача не знайдено"
+        const noResults = document.getElementById('noResults');
+        if (hasVisible) {
+            noResults.style.display = 'none';
+        } else {
+            noResults.style.display = 'block';
+        }
+    });
+    </script>
+</body>
+</html>

@@ -1,0 +1,135 @@
+/* Загальні стилі */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #000000;
+    color: white;
+}
+nav b {
+    background: #ff90c6;
+    color: white;
+    padding: 15px;
+    text-align: center;
+    font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
+}
+/* Заголовок */
+header {
+    background: #ff007b;
+    color: white;
+    padding: 15px;
+    text-align: center;
+    font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
+}
+
+h1 {
+    font-size: 60px;
+    font-weight: bold;
+    text-shadow: 3px 3px 5px rgba(0, 0, 0, 0.3);
+}
+
+/* Меню */
+nav {
+    display: flex;
+    justify-content: center;
+    background: #6d0041;
+    padding: 10px;
+}
+
+nav a {
+    color: white;
+    margin: 0 15px;
+    text-decoration: none;
+}
+
+/* Основний контейнер */
+.container {
+    padding: 20px;
+    text-align: center;
+}
+
+/* Кнопки */
+.btn {
+    padding: 10px 20px;
+    margin: 10px;
+    border: none;
+    background: #f42a8c;
+    color: white;
+    cursor: pointer;
+}
+
+.btn:hover {
+    background: #005f73;
+}
+
+/* Галерея-карусель */
+.collage {
+    width: 400px; /* Розмір контейнера */
+    height: 300px;
+    position: relative;
+    overflow: hidden;
+}
+
+.collage img {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0;
+    animation: fade 10s infinite;
+}
+
+.collage img:nth-child(1) { animation-delay: 0s; }
+.collage img:nth-child(2) { animation-delay: 3s; }
+.collage img:nth-child(3) { animation-delay: 6s; }
+
+.collage-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.collage-img {
+    width: 150px;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 10px;
+}
+.upload-container {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1000;
+}
+
+.upload-btn {
+    background: linear-gradient(145deg, #ff6ec7, #ff3c7e);
+    color: white;
+    font-size: 18px;
+    font-weight: bold;
+    padding: 15px 40px;
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    box-shadow: 0 5px 15px rgba(255, 60, 126, 0.4);
+    transition: all 0.3s ease-in-out;
+}
+
+.upload-btn:hover {
+    background: linear-gradient(145deg, #ff3c7e, #ff6ec7);
+    box-shadow: 0 8px 20px rgba(255, 60, 126, 0.6);
+}
+
+.upload-btn:active {
+    transform: scale(0.95);
+    box-shadow: 0 3px 10px rgba(255, 60, 126, 0.4);
+}
+@keyframes fade {
+    0% { opacity: 0; }
+    10% { opacity: 1; }
+    30% { opacity: 1; }
+    40% { opacity: 0; }
+    100% { opacity: 0; }

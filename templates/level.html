@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Users</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<header>
+    <h1>Level</h1>
+</header>
+<nav>
+    <a href="/">Home</a>
+    <a href="/reglog">To Profile</a>
+    <a href="#">About Us</a>
+</nav>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    <div class="flashes">
+      {% for category, message in messages %}
+        <div class="alert alert-{{ category }}">
+          {{ message }}
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endwith %}
+
+<div style="padding-left: 225px;">
+    <div class="level-container">
+        <div class="level-circle">
+            <div class="level-fill" style="--progress: {{ level }};"></div>  <!-- Додаємо рівень -->
+            <div class="level-text">{{ level }}</div>  <!-- Показуємо рівень -->
+        </div>
+</div>
+
+<h2>Твої завдання</h2>
+<div class="tasks-list">
+    {% for task in tasks %}
+        <div class="task-card">
+            <h3>{{ task.title }}</h3>
+            <p>{{ task.description }}</p>
+            <p><strong>Нагорода:</strong> {{ task.reward }} рівнів</p>
+
+            {% if task.id in completed_task_ids %}
+                <button disabled>✅ Виконано</button>
+            {% else %}
+                <form action="{{ url_for('complete_task', task_id=task.id) }}" method="post">
+                    <button type="submit">Виконати</button>
+                </form>
+            {% endif %}
+        </div>
+    {% endfor %}
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const fill = document.querySelector(".level-fill");
+        const text = document.querySelector(".level-text");
+
+        let current = 0;
+        const target = {{ level }}; // Підставляємо змінну з Flask
+        const speed = 20;
+
+        const interval = setInterval(() => {
+            if (current >= target) {
+                clearInterval(interval);
+            } else {
+                current++;
+                fill.style.height = current + "%";
+                text.textContent = current;
+            }
+        }, speed);
+    });
+</script>
+
+</body>
+</html>
