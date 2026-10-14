@@ -1,3 +1,4 @@
+from dotenv import load_dotenv
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, send_from_directory, abort
@@ -8,8 +9,10 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
 from flask_migrate import Migrate
 
+
 # t_index - це глобальна змінна, яка використовується для контролю ініціалізації завдань(якщо завдання вже додані то ставити t_index=0, якщо треба додати то t_index=1)
 t_index = 0
+load_dotenv()
 
 app = Flask(__name__)
 
