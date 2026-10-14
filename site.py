@@ -12,15 +12,26 @@ from flask_migrate import Migrate
 t_index = 0
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'your_secret_key'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
-app.config['UPLOAD_FOLDER'] = 'static/uploads'
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+app.config['SECRET_KEY'] = os.environ['SECRET_KEY']
+
+app.config['SQLALCHEMY_DATABASE_URI'] = (
+    'sqlite:///' + os.path.join(BASE_DIR, 'instance', 'users.db')
+)
+
+app.config['UPLOAD_FOLDER'] = os.path.join(
+    BASE_DIR, 'static', 'uploads'
+)
+
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
 db = SQLAlchemy(app)
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'
+
 
 migrate = Migrate(app, db)
 
